@@ -5,7 +5,7 @@ This document provides specifications for the ThetaEdgeCloud API used in the Yos
 ## Base URL
 
 ```
-https://api.thetaedgecloud.com
+https://controller.thetaedgecloud.com
 ```
 
 ## Authentication
@@ -21,7 +21,7 @@ x-api-key: your_tec_api_key_here
 The following environment variables are required for API configuration:
 
 ```
-EDGE_CLOUD_CONTROLLER_HOST=https://api.thetaedgecloud.com
+EDGE_CLOUD_CONTROLLER_HOST=https://controller.thetaedgecloud.com
 TEC_API_KEY=your_tec_api_key_here
 CHATBOT_ID=your_chatbot_id_here
 PROJECT_ID=your_project_id_here
@@ -39,7 +39,7 @@ Creates a new document in ThetaEdgeCloud.
   - `x-api-key`: Your ThetaEdgeCloud API key
   - `Content-Type`: `multipart/form-data`
 - **Request Body**:
-  - `file`: The file content (CSV, JSON, etc.)
+  - `file`: The file content (CSV, etc.)
   - `project_id`: The project ID
   - `metadata`: JSON string containing metadata about the document
 
@@ -72,7 +72,7 @@ formData.append('metadata', JSON.stringify({
 }));
 
 const response = await axios.post(
-  `${EDGE_CLOUD_CONTROLLER_HOST}/chatbot/${CHATBOT_ID}/document`,
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}/document`,
   formData,
   {
     headers: {
@@ -136,7 +136,7 @@ formData.append('metadata', JSON.stringify({
 }));
 
 const response = await axios.put(
-  `${EDGE_CLOUD_CONTROLLER_HOST}/chatbot/${CHATBOT_ID}/document/${documentId}`,
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}/document/${documentId}`,
   formData,
   {
     headers: {
@@ -170,7 +170,7 @@ Fetches a document from ThetaEdgeCloud.
 
 ```javascript
 const response = await axios.get(
-  `${EDGE_CLOUD_CONTROLLER_HOST}/chatbot/${CHATBOT_ID}/document/${documentId}`,
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}/document/${documentId}`,
   {
     headers: {
       'x-api-key': TEC_API_KEY
@@ -219,7 +219,7 @@ Fetches a list of documents from ThetaEdgeCloud.
 
 ```javascript
 const response = await axios.get(
-  `${EDGE_CLOUD_CONTROLLER_HOST}/chatbot/${CHATBOT_ID}/document/list`,
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}/document/list`,
   {
     params: {
       project_id: PROJECT_ID,
@@ -237,31 +237,42 @@ const response = await axios.get(
 
 ```json
 {
-  "body": [
-    {
-      "id": "document_id_1",
-      "filename": "yosemite-activities.csv",
-      "metadata": {
-        "query_type": "sql",
-        "sql_schema": {
-          "table_name": "yosemite_activities",
-          "columns": [
-            { "name": "id", "type": "TEXT" },
-            { "name": "title", "type": "TEXT" },
-            // Additional columns...
-          ]
+  "status": "success",
+  "body": {
+    "documents": [
+      {
+        "id": "document_id_here",
+        "knowledge_base_id": "knowledge_base_id_here",
+        "metadata": {
+          "type": "file",
+          "filename": "filename.csv",
+          "query_type": "sql",
+          "sql_schema": {
+            "table_name": "table_name",
+            "columns": [
+              { "name": "column1", "type": "TEXT" },
+              { "name": "column2", "type": "TEXT" }
+              // Additional columns...
+            ]
+          },
+          "sql_description": "Description of the data."
         },
-        "sql_description": "Yosemite National Park activities."
+        "created_at": "2023-01-01T00:00:00.000000Z",
+        "embedding_token_count": 0
       }
-    },
-    // Additional documents...
-  ]
+      // Additional documents...
+    ],
+    "total_documents": 1,
+    "total_pages": 1
+  }
 }
 ```
 
 ## Metadata Structure
 
-The metadata for documents should include the following fields for SQL-queryable data:
+### For SQL-queryable data (CSV, etc.)
+
+The metadata for SQL-queryable documents should include the following fields:
 
 ```json
 {
@@ -275,6 +286,49 @@ The metadata for documents should include the following fields for SQL-queryable
   },
   "sql_description": "Description of the data."
 }
+```
+
+### For Plaintext files
+
+For plaintext files, use the following metadata structure:
+
+```json
+{
+  "query_type": "text",
+  "description": "Detailed description of the text content."
+}
+```
+
+**Example Request for Plaintext File**:
+
+```javascript
+const formData = new FormData();
+
+// Add file to form data
+formData.append('file', Buffer.from(textContent), {
+  filename: 'yosemite-info.txt',
+  contentType: 'text/plain'
+});
+
+// Add project ID
+formData.append('project_id', PROJECT_ID);
+
+// Add metadata
+formData.append('metadata', JSON.stringify({
+  query_type: "text",
+  description: "General information about Yosemite National Park including visitor guidelines, operating hours, and safety information."
+}));
+
+const response = await axios.post(
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}/document`,
+  formData,
+  {
+    headers: {
+      ...formData.getHeaders(),
+      'x-api-key': TEC_API_KEY
+    }
+  }
+);
 ```
 
 ### SQL Schema
@@ -293,30 +347,11 @@ The SQL description provides context about the data for the chatbot. It should i
 - A brief description of the data
 - Any relevant information about how to interpret the data
 
-## Error Handling
-
-The API may return the following error responses:
-
-- **400 Bad Request**: The request was malformed or missing required parameters
-- **401 Unauthorized**: Invalid or missing API key
-- **404 Not Found**: The requested resource was not found
-- **500 Internal Server Error**: An error occurred on the server
-
-Error responses will include an error message in the response body:
-
-```json
-{
-  "error": "Error message here"
-}
-```
-
-## Rate Limiting
-
-The API may implement rate limiting to prevent abuse. If you exceed the rate limit, you will receive a 429 Too Many Requests response. The response will include a Retry-After header indicating how long to wait before making another request.
-
 ## Best Practices
 
 1. **Store Document IDs**: Store document IDs for future updates to avoid creating duplicate documents
-2. **Batch Updates**: Limit the frequency of updates to avoid rate limiting
-3. **Error Handling**: Implement proper error handling to handle API failures gracefully
+2. **File Types**: Choose the appropriate file type and metadata structure based on your data:
+   - Use CSV with SQL metadata for structured data
+   - Use plaintext with text metadata for unstructured content
+3. **Descriptive Metadata**: For plaintext files, provide a detailed description to help the chatbot understand the content
 4. **Metadata**: Provide accurate and complete metadata to ensure the chatbot can effectively use the data 
