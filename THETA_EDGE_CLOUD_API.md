@@ -268,6 +268,177 @@ const response = await axios.get(
 }
 ```
 
+### Fetch Chatbot Details
+
+Retrieves detailed information about a specific chatbot.
+
+- **URL**: `/chatbot/{chatbotId}`
+- **Method**: `GET`
+- **Headers**:
+  - `x-api-key`: Your ThetaEdgeCloud API key
+- **Query Parameters**:
+  - `project_id`: The project ID
+
+**Example Request**:
+
+```javascript
+const response = await axios.get(
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}`,
+  {
+    params: {
+      project_id: PROJECT_ID
+    },
+    headers: {
+      'x-api-key': TEC_API_KEY
+    }
+  }
+);
+```
+
+**Response**:
+
+```json
+{
+  "id": "chatbot_id_here",
+  "name": "Chatbot Name",
+  "project_id": "project_id_here",
+  "llm_endpoint": "https://llm-endpoint-url.thetaedgecloud.com/v1",
+  "knowledge_base_id": "knowledge_base_id_here",
+  "created_at": "2023-01-01T00:00:00.000000Z",
+  "model": "model_name_here",
+  "max_tokens": 2000,
+  "temperature": 0.5,
+  "system_prompt": "System prompt that defines the chatbot's personality and behavior",
+  "context_window": null,
+  "settings": {
+    "agent.tools": {
+      "web_search": false,
+      "text_to_sql": true
+    },
+    "retriever.type": "rerank"
+  },
+  "warm_up_messages": [],
+  "llm_endpoints": [
+    {
+      "id": "llm_endpoint_id_here",
+      "name": "LLM Endpoint Name",
+      "rank": 5
+    }
+    // Additional LLM endpoints...
+  ]
+}
+```
+
+### Update Chatbot
+
+Updates an existing chatbot's configuration.
+
+- **URL**: `/chatbot/{chatbotId}`
+- **Method**: `PUT`
+- **Headers**:
+  - `x-api-key`: Your ThetaEdgeCloud API key
+  - `Content-Type`: `application/json`
+- **Request Body**:
+  - `name`: Name of the chatbot
+  - `project_id`: The project ID
+  - `max_tokens`: Maximum number of tokens for LLM responses
+  - `temperature`: Temperature setting for LLM (controls randomness)
+  - `system_prompt`: System prompt that defines the chatbot's personality
+  - `warm_up_messages`: Array of initial messages to prime the chatbot
+  - `llm_endpoint_id`: ID of the LLM endpoint to use
+  - `settings`: Object containing chatbot settings
+    - `retriever.type`: Type of retriever to use (e.g., "rerank")
+    - `agent.tools`: Object specifying which tools are enabled
+      - `web_search`: Boolean indicating if web search is enabled
+      - `text_to_sql`: Boolean indicating if text-to-SQL is enabled
+
+**Example Request**:
+
+```javascript
+const response = await axios.put(
+  `https://controller.thetaedgecloud.com/chatbot/${CHATBOT_ID}`,
+  {
+    "name": "Chatbot Name",
+    "project_id": PROJECT_ID,
+    "max_tokens": 2000,
+    "temperature": 0.5,
+    "system_prompt": "System prompt that defines the chatbot's personality and behavior",
+    "warm_up_messages": [],
+    "llm_endpoint_id": "llm_endpoint_id_here",
+    "settings": {
+      "retriever.type": "rerank",
+      "agent.tools": {
+        "web_search": false,
+        "text_to_sql": true
+      }
+    }
+  },
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': TEC_API_KEY
+    }
+  }
+);
+```
+
+**Response**: Same as the response for Fetch Chatbot Details.
+
+### Create Chatbot
+
+Creates a new chatbot.
+
+- **URL**: `/chatbot`
+- **Method**: `POST`
+- **Headers**:
+  - `x-api-key`: Your ThetaEdgeCloud API key
+  - `Content-Type`: `application/json`
+- **Request Body**:
+  - `name`: Name of the chatbot
+  - `project_id`: The project ID
+  - `max_tokens`: Maximum number of tokens for LLM responses
+  - `temperature`: Temperature setting for LLM (controls randomness)
+  - `system_prompt`: System prompt that defines the chatbot's personality
+  - `warm_up_messages`: Array of initial messages to prime the chatbot
+  - `llm_endpoint_id`: ID of the LLM endpoint to use
+  - `settings`: Object containing chatbot settings
+    - `retriever.type`: Type of retriever to use (e.g., "rerank")
+    - `agent.tools`: Object specifying which tools are enabled
+      - `web_search`: Boolean indicating if web search is enabled
+      - `text_to_sql`: Boolean indicating if text-to-SQL is enabled
+
+**Example Request**:
+
+```javascript
+const response = await axios.post(
+  `https://controller.thetaedgecloud.com/chatbot`,
+  {
+    "name": "New Chatbot Name",
+    "project_id": PROJECT_ID,
+    "max_tokens": 2000,
+    "temperature": 0.5,
+    "system_prompt": "System prompt that defines the chatbot's personality and behavior",
+    "warm_up_messages": [],
+    "llm_endpoint_id": "llm_endpoint_id_here",
+    "settings": {
+      "retriever.type": "rerank",
+      "agent.tools": {
+        "web_search": false,
+        "text_to_sql": true
+      }
+    }
+  },
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': TEC_API_KEY
+    }
+  }
+);
+```
+
+**Response**: Same as the response for Fetch Chatbot Details.
+
 ## Metadata Structure
 
 ### For SQL-queryable data (CSV, etc.)
