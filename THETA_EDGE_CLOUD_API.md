@@ -1,4 +1,4 @@
-# ThetaEdgeCloud API Specifications
+# ThetaEdgeCloud RAG Chatbot API Specifications
 
 This document provides specifications for the ThetaEdgeCloud API used in the Yosemite Activities Chatbot Knowledge Example project. The API allows you to manage documents in the ThetaEdgeCloud knowledge base.
 
